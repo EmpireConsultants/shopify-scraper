@@ -5,9 +5,13 @@ import time
 import urllib.request
 from urllib.error import HTTPError
 from optparse import OptionParser
+import ssl
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+CTX = ssl.create_default_context()
+CTX.check_hostname = False
+CTX.verify_mode = ssl.CERT_NONE
 
 
 def get_page(url, page, collection_handle=None):
@@ -24,7 +28,7 @@ def get_page(url, page, collection_handle=None):
     )
     while True:
         try:
-            data = urllib.request.urlopen(req).read()
+            data = urllib.request.urlopen(req, context=CTX).read()
             break
         except HTTPError:
             print('Blocked! Sleeping...')
@@ -48,7 +52,7 @@ def get_page_collections(url):
         )
         while True:
             try:
-                data = urllib.request.urlopen(req).read()
+                data = urllib.request.urlopen(req, context=CTX).read()
                 break
             except HTTPError:
                 print('Blocked! Sleeping...')
@@ -130,7 +134,7 @@ def extract_products_collection(url, col):
 
 
 def extract_products(url, path, collections=None):
-    with open(path, 'w') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['Code', 'Collection', 'Category',
                          'Name', 'Variant Name',
